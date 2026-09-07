@@ -110,10 +110,8 @@ onUnmounted(() => {
 
 <template>
   <main class="page">
-    <h1 class="title">Dobbelsteen</h1>
-
-    <section class="panel results-panel" aria-labelledby="results-heading">
-      <h2 id="results-heading" class="visually-hidden">Resultaat</h2>
+    <section class="results-panel" aria-labelledby="results-heading">
+      <h1 id="results-heading" class="title">Dobbelsteen</h1>
       <div v-if="results.length" class="results">
         <div v-for="(value, i) in results" :key="i" class="results__die">
           <Dice3D :value="value" :spin="spin" />
@@ -124,54 +122,39 @@ onUnmounted(() => {
       <p class="visually-hidden" role="status" aria-live="polite">{{ statusMessage }}</p>
     </section>
 
-    <section class="panel controls-panel" aria-labelledby="controls-heading">
-      <h2 id="controls-heading" class="visually-hidden">Rollen</h2>
-      <div class="controls">
-        <div class="counter">
-          <button
-            type="button"
-            class="counter__btn"
-            :disabled="diceCount <= MIN_DICE || isRolling"
-            aria-label="Een dobbelsteen minder"
-            @click="changeCount(-1)"
-          >
-            −
-          </button>
-          <input
-            class="counter__value"
-            type="number"
-            inputmode="numeric"
-            :min="MIN_DICE"
-            :max="MAX_DICE"
-            :value="diceCount"
-            :disabled="isRolling"
-            aria-label="Aantal dobbelstenen"
-            @change="onCountInput"
-          >
-          <button
-            type="button"
-            class="counter__btn"
-            :disabled="diceCount >= MAX_DICE || isRolling"
-            aria-label="Een dobbelsteen meer"
-            @click="changeCount(1)"
-          >
-            +
-          </button>
-        </div>
-
-        <HoldToRollButton
-          class="controls__roll"
-          label="Houd ingedrukt en laat los om te rollen"
-          :disabled="isRolling"
-          @roll="roll"
+    <section class="panel mid-panel" aria-labelledby="count-heading">
+      <h2 id="count-heading" class="visually-hidden">Aantal dobbelstenen</h2>
+      <div class="counter">
+        <button
+          type="button"
+          class="counter__btn"
+          :disabled="diceCount <= MIN_DICE || isRolling"
+          aria-label="Een dobbelsteen minder"
+          @click="changeCount(-1)"
         >
-          {{ isRolling ? 'Bezig...' : 'Rol' }}
-        </HoldToRollButton>
+          −
+        </button>
+        <input
+          class="counter__value"
+          type="number"
+          inputmode="numeric"
+          :min="MIN_DICE"
+          :max="MAX_DICE"
+          :value="diceCount"
+          :disabled="isRolling"
+          aria-label="Aantal dobbelstenen"
+          @change="onCountInput"
+        >
+        <button
+          type="button"
+          class="counter__btn"
+          :disabled="diceCount >= MAX_DICE || isRolling"
+          aria-label="Een dobbelsteen meer"
+          @click="changeCount(1)"
+        >
+          +
+        </button>
       </div>
-
-      <p class="hint">
-        Je kunt de knop zo lang vasthouden als je wilt. Er gebeurt pas iets zodra je loslaat.
-      </p>
       <button
         type="button"
         class="sound-toggle"
@@ -180,6 +163,21 @@ onUnmounted(() => {
       >
         {{ soundEnabled ? '🔊 Geluid aan' : '🔇 Geluid uit' }}
       </button>
+    </section>
+
+    <section class="roll-panel" aria-labelledby="roll-heading">
+      <h2 id="roll-heading" class="visually-hidden">Rollen</h2>
+      <HoldToRollButton
+        size="large"
+        label="Houd ingedrukt en laat los om te rollen"
+        :disabled="isRolling"
+        @roll="roll"
+      >
+        {{ isRolling ? 'Bezig...' : 'Rol' }}
+      </HoldToRollButton>
+      <p class="hint">
+        Je kunt de knop zo lang vasthouden als je wilt. Er gebeurt pas iets zodra je loslaat.
+      </p>
     </section>
   </main>
 </template>
@@ -203,16 +201,17 @@ body {
 .page {
   max-width: 40rem;
   margin: 0 auto;
-  padding: 1.5rem 1.25rem 3rem;
+  min-height: 100dvh;
+  padding: 1.25rem 1.25rem 2rem;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .title {
-  font-size: clamp(2rem, 6vw, 3rem);
+  font-size: clamp(1.5rem, 5vw, 2.25rem);
   text-align: center;
-  margin: 0.5rem 0 0;
+  margin: 0 0 0.5rem;
 }
 
 .panel {
@@ -237,11 +236,12 @@ body {
 }
 
 .results-panel {
-  min-height: 14rem;
+  flex: 1 1 50vh;
+  min-height: 45vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 2rem 1.5rem;
+  padding: 1rem 0.5rem;
 }
 
 .results {
@@ -265,15 +265,12 @@ body {
   margin: 1.5rem 0 0;
 }
 
-.controls-panel {
-  padding-top: 1.25rem;
-  padding-bottom: 1.25rem;
-}
-
-.controls {
+.mid-panel {
+  flex: 0 0 auto;
   display: flex;
   align-items: stretch;
   gap: 0.75rem;
+  padding: 1rem;
 }
 
 .counter {
@@ -283,8 +280,8 @@ body {
   gap: 0.5rem;
 }
 
-.controls__roll {
-  flex: 1 1 9rem;
+.sound-toggle {
+  flex: 0 0 auto;
 }
 
 .counter__btn {
@@ -320,21 +317,13 @@ body {
   border-radius: 0.85rem;
 }
 
-.hint {
-  text-align: center;
-  color: #475569;
-  margin-top: 1rem;
-  margin-bottom: 0;
-}
-
 .sound-toggle {
-  display: block;
-  margin: 1rem auto 0;
-  padding: 0.6rem 1.25rem;
+  flex: 0 0 auto;
+  padding: 0 1rem;
   font-size: 1rem;
   font-weight: 600;
   border: 2px solid #cbd5e1;
-  border-radius: 0.75rem;
+  border-radius: 0.85rem;
   background: #f8fafc;
   color: #0f172a;
   cursor: pointer;
@@ -346,8 +335,23 @@ body {
   outline-offset: 2px;
 }
 
+.roll-panel {
+  flex: 0 0 auto;
+  min-height: 30vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.hint {
+  text-align: center;
+  color: #475569;
+  margin: 0;
+}
+
 @media (max-width: 26rem) {
-  .controls {
+  .mid-panel {
     flex-direction: column;
   }
 }

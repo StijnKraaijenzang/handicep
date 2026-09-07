@@ -13,10 +13,12 @@ const props = withDefaults(
   defineProps<{
     disabled?: boolean
     label?: string
+    size?: 'default' | 'large'
   }>(),
   {
     disabled: false,
     label: 'Rol',
+    size: 'default',
   },
 )
 
@@ -83,7 +85,7 @@ function onKeyUp(e: KeyboardEvent) {
     ref="buttonEl"
     type="button"
     class="hold-button"
-    :class="{ 'is-pressed': isPressed }"
+    :class="{ 'is-pressed': isPressed, 'hold-button--large': size === 'large' }"
     :disabled="disabled"
     :aria-pressed="isPressed"
     :aria-label="label"
@@ -121,6 +123,13 @@ function onKeyUp(e: KeyboardEvent) {
   box-shadow: 0 5px 0 #1e3a8a;
 }
 
+.hold-button--large {
+  font-size: clamp(1.75rem, 7vw, 2.75rem);
+  border-radius: 1.75rem;
+  min-height: clamp(7rem, 27vh, 11rem);
+  box-shadow: 0 8px 0 #1e3a8a;
+}
+
 .hold-button:disabled {
   background: #94a3b8;
   box-shadow: 0 5px 0 #64748b;
@@ -131,6 +140,11 @@ function onKeyUp(e: KeyboardEvent) {
   background: #15803d;
   transform: translateY(3px);
   box-shadow: 0 2px 0 #14532d;
+}
+
+.hold-button--large.is-pressed {
+  transform: translateY(5px);
+  box-shadow: 0 3px 0 #14532d;
 }
 
 .hold-button:focus-visible {

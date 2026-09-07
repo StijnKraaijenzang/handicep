@@ -69,7 +69,16 @@ function trigger() {
   spinTo(props.value)
 }
 
-onMounted(trigger)
+onMounted(() => {
+  // On first mount the resting (unrotated) state and the spun-to state
+  // would otherwise land in the same paint, giving the transition no
+  // "before" frame to animate from - so it just snaps instead of rolling.
+  // Waiting two frames guarantees the resting state is actually painted
+  // first.
+  requestAnimationFrame(() => {
+    requestAnimationFrame(trigger)
+  })
+})
 watch(() => props.spin, trigger)
 </script>
 

@@ -130,9 +130,9 @@ watch(() => props.spin, trigger)
   position: absolute;
   inset: 0;
   background: #fff;
-  border: 3px solid #1e293b;
+  border: 3px solid var(--color-cyan, #48bed8);
   border-radius: 18%;
-  box-shadow: inset 0 0 0 2px rgba(15, 23, 42, 0.05);
+  box-shadow: inset 0 0 0 2px rgba(33, 41, 52, 0.05);
 }
 
 .dice3d__dot {
@@ -140,7 +140,7 @@ watch(() => props.spin, trigger)
   width: 16%;
   height: 16%;
   border-radius: 50%;
-  background: #1e293b;
+  background: var(--color-text, #212934);
   transform: translate(-50%, -50%);
 }
 

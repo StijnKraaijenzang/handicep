@@ -111,8 +111,9 @@ function onKeyUp(e: KeyboardEvent) {
   user-select: none;
   border: none;
   border-radius: 1.25rem;
-  background: #1d4ed8;
+  background: var(--color-primary, #e50050);
   color: #fff;
+  font-family: 'Montserrat', system-ui, sans-serif;
   font-size: clamp(1.1rem, 4vw, 1.5rem);
   font-weight: 700;
   padding: 1rem 1.25rem;
@@ -120,14 +121,15 @@ function onKeyUp(e: KeyboardEvent) {
   min-height: 5rem;
   cursor: pointer;
   transition: transform 0.08s ease, background-color 0.08s ease, box-shadow 0.08s ease;
-  box-shadow: 0 5px 0 #1e3a8a;
+  box-shadow: 0 5px 0 var(--color-primary-darker, #7a002b);
 }
 
 .hold-button--large {
   font-size: clamp(1.75rem, 7vw, 2.75rem);
+  font-weight: 800;
   border-radius: 1.75rem;
   min-height: clamp(4.5rem, 27vh, 11rem);
-  box-shadow: 0 8px 0 #1e3a8a;
+  box-shadow: 0 8px 0 var(--color-primary-darker, #7a002b);
 }
 
 .hold-button:disabled {
@@ -137,18 +139,18 @@ function onKeyUp(e: KeyboardEvent) {
 }
 
 .hold-button.is-pressed {
-  background: #15803d;
+  background: var(--color-primary-dark, #a00038);
   transform: translateY(3px);
-  box-shadow: 0 2px 0 #14532d;
+  box-shadow: 0 2px 0 var(--color-primary-darker, #7a002b);
 }
 
 .hold-button--large.is-pressed {
   transform: translateY(5px);
-  box-shadow: 0 3px 0 #14532d;
+  box-shadow: 0 3px 0 var(--color-primary-darker, #7a002b);
 }
 
 .hold-button:focus-visible {
-  outline: 4px solid #facc15;
+  outline: 4px solid var(--color-yellow, #ffdd00);
   outline-offset: 4px;
 }
 

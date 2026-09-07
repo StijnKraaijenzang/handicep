@@ -4,8 +4,13 @@ useHead({
   title: 'Toegankelijke Dobbelsteen',
   meta: [
     { name: 'description', content: 'Een dobbelsteen-app die je bedient door een knop in te drukken, vast te houden zolang je wilt, en pas te laten rollen als je loslaat.' },
-    { name: 'theme-color', content: '#1d4ed8' },
+    { name: 'theme-color', content: '#e50050' },
     { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+  ],
+  link: [
+    { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+    { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
+    { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap' },
   ],
 })
 
@@ -14,6 +19,18 @@ const MAX_DICE = 20
 const ROLL_DURATION_MS = 900
 const COUNT_STORAGE_KEY = 'dice-app:dice-count'
 const SOUND_STORAGE_KEY = 'dice-app:sound-enabled'
+
+// Speelstoet's own logo colours, cycled per letter to echo its tumbled,
+// multicoloured logotype - see https://speelstoet.nl/
+const BRAND_PALETTE = ['#e50050', '#48bed8', '#ffdd00']
+
+const titleLetters = computed(() =>
+  'Dobbelsteen'.split('').map((char, i) => ({
+    char,
+    color: BRAND_PALETTE[i % BRAND_PALETTE.length],
+    rotate: (i % 2 === 0 ? -1 : 1) * (2 + (i % 3)),
+  })),
+)
 
 const { playRollSound } = useDiceSound()
 
@@ -111,7 +128,14 @@ onUnmounted(() => {
 <template>
   <main class="page">
     <section class="results-panel" aria-labelledby="results-heading">
-      <h1 id="results-heading" class="title">Dobbelsteen</h1>
+      <h1 id="results-heading" class="title">
+        <span
+          v-for="(letter, i) in titleLetters"
+          :key="i"
+          class="title__letter"
+          :style="{ color: letter.color, transform: `rotate(${letter.rotate}deg)` }"
+        >{{ letter.char }}</span>
+      </h1>
       <div class="results-body">
         <div v-if="results.length" class="results">
           <div v-for="(value, i) in results" :key="i" class="results__die">
@@ -187,6 +211,16 @@ onUnmounted(() => {
 <style>
 :root {
   color-scheme: light;
+  /* Speelstoet's logo colours (speelstoet.nl) and body typeface */
+  --color-bg: #f6f6f6;
+  --color-surface: #ffffff;
+  --color-text: #212934;
+  --color-text-soft: #5b6472;
+  --color-primary: #e50050;
+  --color-primary-dark: #a00038;
+  --color-primary-darker: #7a002b;
+  --color-cyan: #48bed8;
+  --color-yellow: #ffdd00;
 }
 
 * {
@@ -195,9 +229,9 @@ onUnmounted(() => {
 
 body {
   margin: 0;
-  background: #f1f5f9;
-  color: #0f172a;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: 'Montserrat', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 
 .page {
@@ -214,15 +248,20 @@ body {
 .title {
   flex: 0 0 auto;
   font-size: clamp(1.25rem, 4vw, 2rem);
+  font-weight: 800;
   text-align: center;
   margin: 0;
 }
 
+.title__letter {
+  display: inline-block;
+}
+
 .panel {
-  background: #fff;
+  background: var(--color-surface);
   border-radius: 1.5rem;
   padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+  box-shadow: 0 1px 3px rgba(33, 41, 52, 0.12);
 }
 
 .panel__heading {
@@ -266,7 +305,7 @@ body {
 
 .placeholder {
   text-align: center;
-  color: #475569;
+  color: var(--color-text-soft);
   margin: 0;
 }
 
@@ -274,6 +313,7 @@ body {
   text-align: center;
   font-size: 1.5rem;
   font-weight: 700;
+  color: var(--color-primary);
   margin: 1.5rem 0 0;
 }
 
@@ -302,8 +342,8 @@ body {
   font-weight: 700;
   border: none;
   border-radius: 0.85rem;
-  background: #e2e8f0;
-  color: #0f172a;
+  background: #e3f4f8;
+  color: var(--color-text);
   cursor: pointer;
   touch-action: manipulation;
 }
@@ -315,7 +355,7 @@ body {
 
 .counter__btn:focus-visible,
 .counter__value:focus-visible {
-  outline: 4px solid #facc15;
+  outline: 4px solid var(--color-yellow);
   outline-offset: 2px;
 }
 
@@ -325,7 +365,8 @@ body {
   text-align: center;
   font-size: 1.5rem;
   font-weight: 700;
-  border: 2px solid #cbd5e1;
+  color: var(--color-text);
+  border: 2px solid var(--color-cyan);
   border-radius: 0.85rem;
 }
 
@@ -334,16 +375,21 @@ body {
   padding: 0 1rem;
   font-size: 1rem;
   font-weight: 600;
-  border: 2px solid #cbd5e1;
+  border: 2px solid var(--color-cyan);
   border-radius: 0.85rem;
   background: #f8fafc;
-  color: #0f172a;
+  color: var(--color-text);
   cursor: pointer;
   touch-action: manipulation;
 }
 
+.sound-toggle[aria-pressed="true"] {
+  background: #fff8d6;
+  border-color: var(--color-yellow);
+}
+
 .sound-toggle:focus-visible {
-  outline: 4px solid #facc15;
+  outline: 4px solid var(--color-yellow);
   outline-offset: 2px;
 }
 
@@ -358,7 +404,7 @@ body {
 
 .hint {
   text-align: center;
-  color: #475569;
+  color: var(--color-text-soft);
   margin: 0;
 }
 

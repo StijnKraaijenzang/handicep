@@ -108,28 +108,28 @@ function onKeyUp(e: KeyboardEvent) {
   -webkit-user-select: none;
   user-select: none;
   border: none;
-  border-radius: 1.5rem;
+  border-radius: 1.25rem;
   background: #1d4ed8;
   color: #fff;
-  font-size: clamp(1.5rem, 5vw, 2.5rem);
+  font-size: clamp(1.1rem, 4vw, 1.5rem);
   font-weight: 700;
-  padding: 1.5rem 2rem;
+  padding: 1rem 1.25rem;
   width: 100%;
-  min-height: 8rem;
+  min-height: 5rem;
   cursor: pointer;
   transition: transform 0.08s ease, background-color 0.08s ease, box-shadow 0.08s ease;
-  box-shadow: 0 6px 0 #1e3a8a;
+  box-shadow: 0 5px 0 #1e3a8a;
 }
 
 .hold-button:disabled {
   background: #94a3b8;
-  box-shadow: 0 6px 0 #64748b;
+  box-shadow: 0 5px 0 #64748b;
   cursor: not-allowed;
 }
 
 .hold-button.is-pressed {
   background: #15803d;
-  transform: translateY(4px);
+  transform: translateY(3px);
   box-shadow: 0 2px 0 #14532d;
 }
 

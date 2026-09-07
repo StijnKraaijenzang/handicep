@@ -112,52 +112,65 @@ onUnmounted(() => {
   <main class="page">
     <h1 class="title">Dobbelsteen</h1>
 
-    <section class="panel" aria-labelledby="count-heading">
-      <h2 id="count-heading" class="panel__heading">Aantal dobbelstenen</h2>
-      <div class="counter">
-        <button
-          type="button"
-          class="counter__btn"
-          :disabled="diceCount <= MIN_DICE || isRolling"
-          aria-label="Een dobbelsteen minder"
-          @click="changeCount(-1)"
-        >
-          −
-        </button>
-        <input
-          class="counter__value"
-          type="number"
-          inputmode="numeric"
-          :min="MIN_DICE"
-          :max="MAX_DICE"
-          :value="diceCount"
-          :disabled="isRolling"
-          aria-label="Aantal dobbelstenen"
-          @change="onCountInput"
-        >
-        <button
-          type="button"
-          class="counter__btn"
-          :disabled="diceCount >= MAX_DICE || isRolling"
-          aria-label="Een dobbelsteen meer"
-          @click="changeCount(1)"
-        >
-          +
-        </button>
+    <section class="panel results-panel" aria-labelledby="results-heading">
+      <h2 id="results-heading" class="visually-hidden">Resultaat</h2>
+      <div v-if="results.length" class="results">
+        <div v-for="(value, i) in results" :key="i" class="results__die">
+          <Dice3D :value="value" :spin="spin" />
+        </div>
       </div>
+      <p v-else class="placeholder">Nog niet gerold.</p>
+      <p v-if="!isRolling && results.length > 1" class="total">Totaal: {{ total }}</p>
+      <p class="visually-hidden" role="status" aria-live="polite">{{ statusMessage }}</p>
     </section>
 
-    <section class="panel" aria-labelledby="roll-heading">
-      <h2 id="roll-heading" class="visually-hidden">Rollen</h2>
-      <HoldToRollButton
-        label="Houd ingedrukt en laat los om te rollen"
-        :disabled="isRolling"
-        @roll="roll"
-      >
-        {{ isRolling ? 'Bezig...' : 'Houd ingedrukt, laat los om te rollen' }}
-      </HoldToRollButton>
+    <section class="panel controls-panel" aria-labelledby="controls-heading">
+      <h2 id="controls-heading" class="visually-hidden">Rollen</h2>
+      <div class="controls">
+        <div class="counter">
+          <button
+            type="button"
+            class="counter__btn"
+            :disabled="diceCount <= MIN_DICE || isRolling"
+            aria-label="Een dobbelsteen minder"
+            @click="changeCount(-1)"
+          >
+            −
+          </button>
+          <input
+            class="counter__value"
+            type="number"
+            inputmode="numeric"
+            :min="MIN_DICE"
+            :max="MAX_DICE"
+            :value="diceCount"
+            :disabled="isRolling"
+            aria-label="Aantal dobbelstenen"
+            @change="onCountInput"
+          >
+          <button
+            type="button"
+            class="counter__btn"
+            :disabled="diceCount >= MAX_DICE || isRolling"
+            aria-label="Een dobbelsteen meer"
+            @click="changeCount(1)"
+          >
+            +
+          </button>
+        </div>
+
+        <HoldToRollButton
+          class="controls__roll"
+          label="Houd ingedrukt en laat los om te rollen"
+          :disabled="isRolling"
+          @roll="roll"
+        >
+          {{ isRolling ? 'Bezig...' : 'Rol' }}
+        </HoldToRollButton>
+      </div>
+
       <p class="hint">
-        Je kunt deze knop zo lang vasthouden als je wilt. Er gebeurt pas iets zodra je loslaat.
+        Je kunt de knop zo lang vasthouden als je wilt. Er gebeurt pas iets zodra je loslaat.
       </p>
       <button
         type="button"
@@ -167,18 +180,6 @@ onUnmounted(() => {
       >
         {{ soundEnabled ? '🔊 Geluid aan' : '🔇 Geluid uit' }}
       </button>
-    </section>
-
-    <section class="panel" aria-labelledby="results-heading">
-      <h2 id="results-heading" class="panel__heading">Resultaat</h2>
-      <div v-if="results.length" class="results">
-        <div v-for="(value, i) in results" :key="i" class="results__die">
-          <Dice3D :value="value" :spin="spin" />
-        </div>
-      </div>
-      <p v-else class="hint">Nog niet gerold.</p>
-      <p v-if="!isRolling && results.length > 1" class="total">Totaal: {{ total }}</p>
-      <p class="visually-hidden" role="status" aria-live="polite">{{ statusMessage }}</p>
     </section>
   </main>
 </template>
@@ -235,18 +236,63 @@ body {
   white-space: nowrap;
 }
 
-.counter {
+.results-panel {
+  min-height: 14rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+}
+
+.results {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.placeholder {
+  text-align: center;
+  color: #475569;
+  margin: 0;
+}
+
+.total {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 1.5rem 0 0;
+}
+
+.controls-panel {
+  padding-top: 1.25rem;
+  padding-bottom: 1.25rem;
+}
+
+.controls {
   display: flex;
   align-items: stretch;
   gap: 0.75rem;
 }
 
+.counter {
+  flex: 1 1 12rem;
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+.controls__roll {
+  flex: 1 1 9rem;
+}
+
 .counter__btn {
-  flex: 0 0 4.5rem;
-  font-size: 2rem;
+  flex: 0 0 3.5rem;
+  font-size: 1.5rem;
   font-weight: 700;
   border: none;
-  border-radius: 1rem;
+  border-radius: 0.85rem;
   background: #e2e8f0;
   color: #0f172a;
   cursor: pointer;
@@ -266,12 +312,12 @@ body {
 
 .counter__value {
   flex: 1;
+  min-width: 0;
   text-align: center;
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 700;
   border: 2px solid #cbd5e1;
-  border-radius: 1rem;
-  min-width: 0;
+  border-radius: 0.85rem;
 }
 
 .hint {
@@ -300,17 +346,9 @@ body {
   outline-offset: 2px;
 }
 
-.results {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 1rem;
-}
-
-.total {
-  text-align: center;
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin: 1rem 0 0;
+@media (max-width: 26rem) {
+  .controls {
+    flex-direction: column;
+  }
 }
 </style>

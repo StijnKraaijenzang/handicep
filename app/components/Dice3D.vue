@@ -101,7 +101,7 @@ watch(() => props.spin, trigger)
 
 <style scoped>
 .dice3d {
-  --die-size: clamp(4rem, 18vw, 5.5rem);
+  --die-size: clamp(4.5rem, 24vw, 7.5rem);
   --half-size: calc(var(--die-size) / 2);
   width: var(--die-size);
   height: var(--die-size);

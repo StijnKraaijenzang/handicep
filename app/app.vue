@@ -11,26 +11,46 @@ useHead({
 
 const MIN_DICE = 1
 const MAX_DICE = 20
-const STORAGE_KEY = 'dice-app:dice-count'
+const ROLL_DURATION_MS = 650
+const CYCLE_INTERVAL_MS = 90
+const COUNT_STORAGE_KEY = 'dice-app:dice-count'
+const SOUND_STORAGE_KEY = 'dice-app:sound-enabled'
+
+const { playRollSound } = useDiceSound()
 
 const diceCount = ref(2)
 const results = ref<number[]>([])
+const displayResults = ref<number[]>([])
 const isRolling = ref(false)
+const soundEnabled = ref(true)
 const statusMessage = ref('Klaar om te rollen.')
 
 const total = computed(() => results.value.reduce((sum, v) => sum + v, 0))
 
 onMounted(() => {
-  const saved = localStorage.getItem(STORAGE_KEY)
-  const parsed = saved ? Number.parseInt(saved, 10) : NaN
+  const savedCount = localStorage.getItem(COUNT_STORAGE_KEY)
+  const parsed = savedCount ? Number.parseInt(savedCount, 10) : NaN
   if (Number.isInteger(parsed) && parsed >= MIN_DICE && parsed <= MAX_DICE) {
     diceCount.value = parsed
+  }
+
+  const savedSound = localStorage.getItem(SOUND_STORAGE_KEY)
+  if (savedSound !== null) {
+    soundEnabled.value = savedSound === 'true'
   }
 })
 
 watch(diceCount, (value) => {
-  localStorage.setItem(STORAGE_KEY, String(value))
+  localStorage.setItem(COUNT_STORAGE_KEY, String(value))
 })
+
+watch(soundEnabled, (value) => {
+  localStorage.setItem(SOUND_STORAGE_KEY, String(value))
+})
+
+function toggleSound() {
+  soundEnabled.value = !soundEnabled.value
+}
 
 function clampCount(value: number) {
   return Math.min(MAX_DICE, Math.max(MIN_DICE, value))
@@ -46,20 +66,32 @@ function onCountInput(e: Event) {
   diceCount.value = clampCount(raw)
 }
 
+function randomDie() {
+  return 1 + Math.floor(Math.random() * 6)
+}
+
+let cycleInterval: ReturnType<typeof setInterval> | undefined
 let rollTimeout: ReturnType<typeof setTimeout> | undefined
 
 function roll() {
+  if (cycleInterval) clearInterval(cycleInterval)
   if (rollTimeout) clearTimeout(rollTimeout)
 
+  const count = diceCount.value
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
   isRolling.value = true
   statusMessage.value = 'Bezig met rollen...'
+  displayResults.value = Array.from({ length: count }, randomDie)
+
+  if (soundEnabled.value) {
+    playRollSound(ROLL_DURATION_MS / 1000)
+  }
 
   const finish = () => {
-    results.value = Array.from(
-      { length: diceCount.value },
-      () => 1 + Math.floor(Math.random() * 6),
-    )
+    if (cycleInterval) clearInterval(cycleInterval)
+    results.value = Array.from({ length: count }, randomDie)
+    displayResults.value = results.value
     isRolling.value = false
     const list = results.value.join(', ')
     statusMessage.value =
@@ -71,9 +103,17 @@ function roll() {
   if (prefersReducedMotion) {
     finish()
   } else {
-    rollTimeout = setTimeout(finish, 400)
+    cycleInterval = setInterval(() => {
+      displayResults.value = displayResults.value.map(() => randomDie())
+    }, CYCLE_INTERVAL_MS)
+    rollTimeout = setTimeout(finish, ROLL_DURATION_MS)
   }
 }
+
+onUnmounted(() => {
+  if (cycleInterval) clearInterval(cycleInterval)
+  if (rollTimeout) clearTimeout(rollTimeout)
+})
 </script>
 
 <template>
@@ -86,7 +126,7 @@ function roll() {
         <button
           type="button"
           class="counter__btn"
-          :disabled="diceCount <= MIN_DICE"
+          :disabled="diceCount <= MIN_DICE || isRolling"
           aria-label="Een dobbelsteen minder"
           @click="changeCount(-1)"
         >
@@ -99,13 +139,14 @@ function roll() {
           :min="MIN_DICE"
           :max="MAX_DICE"
           :value="diceCount"
+          :disabled="isRolling"
           aria-label="Aantal dobbelstenen"
           @change="onCountInput"
         >
         <button
           type="button"
           class="counter__btn"
-          :disabled="diceCount >= MAX_DICE"
+          :disabled="diceCount >= MAX_DICE || isRolling"
           aria-label="Een dobbelsteen meer"
           @click="changeCount(1)"
         >
@@ -126,17 +167,25 @@ function roll() {
       <p class="hint">
         Je kunt deze knop zo lang vasthouden als je wilt. Er gebeurt pas iets zodra je loslaat.
       </p>
+      <button
+        type="button"
+        class="sound-toggle"
+        :aria-pressed="soundEnabled"
+        @click="toggleSound"
+      >
+        {{ soundEnabled ? '🔊 Geluid aan' : '🔇 Geluid uit' }}
+      </button>
     </section>
 
     <section class="panel" aria-labelledby="results-heading">
       <h2 id="results-heading" class="panel__heading">Resultaat</h2>
-      <div v-if="results.length" class="results" :class="{ 'is-rolling': isRolling }">
-        <div v-for="(value, i) in results" :key="i" class="results__die">
+      <div v-if="displayResults.length" class="results" :class="{ 'is-rolling': isRolling }">
+        <div v-for="(value, i) in displayResults" :key="i" class="results__die">
           <DiceFace :value="value" />
         </div>
       </div>
       <p v-else class="hint">Nog niet gerold.</p>
-      <p v-if="results.length > 1" class="total">Totaal: {{ total }}</p>
+      <p v-if="!isRolling && results.length > 1" class="total">Totaal: {{ total }}</p>
       <p class="visually-hidden" role="status" aria-live="polite">{{ statusMessage }}</p>
     </section>
   </main>
@@ -240,6 +289,25 @@ body {
   margin-bottom: 0;
 }
 
+.sound-toggle {
+  display: block;
+  margin: 1rem auto 0;
+  padding: 0.6rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border: 2px solid #cbd5e1;
+  border-radius: 0.75rem;
+  background: #f8fafc;
+  color: #0f172a;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.sound-toggle:focus-visible {
+  outline: 4px solid #facc15;
+  outline-offset: 2px;
+}
+
 .results {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(4.5rem, 1fr));
@@ -251,7 +319,11 @@ body {
 }
 
 .results.is-rolling {
-  animation: shake 0.4s ease;
+  animation: shake 0.4s ease infinite;
+}
+
+.results.is-rolling .results__die {
+  animation: pulse 0.3s ease infinite;
 }
 
 @keyframes shake {
@@ -260,8 +332,14 @@ body {
   75% { transform: rotate(4deg); }
 }
 
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(0.9); }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .results.is-rolling {
+  .results.is-rolling,
+  .results.is-rolling .results__die {
     animation: none;
   }
 }

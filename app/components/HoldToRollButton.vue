@@ -126,7 +126,7 @@ function onKeyUp(e: KeyboardEvent) {
 .hold-button--large {
   font-size: clamp(1.75rem, 7vw, 2.75rem);
   border-radius: 1.75rem;
-  min-height: clamp(7rem, 27vh, 11rem);
+  min-height: clamp(4.5rem, 27vh, 11rem);
   box-shadow: 0 8px 0 #1e3a8a;
 }
 

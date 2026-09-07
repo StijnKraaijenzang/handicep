@@ -112,13 +112,15 @@ onUnmounted(() => {
   <main class="page">
     <section class="results-panel" aria-labelledby="results-heading">
       <h1 id="results-heading" class="title">Dobbelsteen</h1>
-      <div v-if="results.length" class="results">
-        <div v-for="(value, i) in results" :key="i" class="results__die">
-          <Dice3D :value="value" :spin="spin" />
+      <div class="results-body">
+        <div v-if="results.length" class="results">
+          <div v-for="(value, i) in results" :key="i" class="results__die">
+            <Dice3D :value="value" :spin="spin" />
+          </div>
         </div>
+        <p v-else class="placeholder">Nog niet gerold.</p>
+        <p v-if="!isRolling && results.length > 1" class="total">Totaal: {{ total }}</p>
       </div>
-      <p v-else class="placeholder">Nog niet gerold.</p>
-      <p v-if="!isRolling && results.length > 1" class="total">Totaal: {{ total }}</p>
       <p class="visually-hidden" role="status" aria-live="polite">{{ statusMessage }}</p>
     </section>
 
@@ -201,17 +203,19 @@ body {
 .page {
   max-width: 40rem;
   margin: 0 auto;
-  min-height: 100dvh;
-  padding: 1.25rem 1.25rem 2rem;
+  height: 100dvh;
+  padding: 0.75rem 1.25rem;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.75rem;
+  overflow: hidden;
 }
 
 .title {
-  font-size: clamp(1.5rem, 5vw, 2.25rem);
+  flex: 0 0 auto;
+  font-size: clamp(1.25rem, 4vw, 2rem);
   text-align: center;
-  margin: 0 0 0.5rem;
+  margin: 0;
 }
 
 .panel {
@@ -236,12 +240,20 @@ body {
 }
 
 .results-panel {
-  flex: 1 1 50vh;
-  min-height: 45vh;
+  flex: 3 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0 0.5rem;
+}
+
+.results-body {
+  flex: 1 1 auto;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 1rem 0.5rem;
+  overflow-y: auto;
 }
 
 .results {
@@ -336,8 +348,8 @@ body {
 }
 
 .roll-panel {
-  flex: 0 0 auto;
-  min-height: 30vh;
+  flex: 2 1 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;

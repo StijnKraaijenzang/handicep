@@ -16,7 +16,7 @@ useHead({
 
 const MIN_DICE = 1
 const MAX_DICE = 20
-const ROLL_DURATION_MS = 900
+const ROLL_DURATION_MS = 1800
 const COUNT_STORAGE_KEY = 'dice-app:dice-count'
 const SOUND_STORAGE_KEY = 'dice-app:sound-enabled'
 

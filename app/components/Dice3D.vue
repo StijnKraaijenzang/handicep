@@ -59,7 +59,7 @@ function spinTo(value: number) {
   const extraTurnsX = prefersReducedMotion ? 0 : (2 + Math.floor(Math.random() * 3)) * 360
   const extraTurnsY = prefersReducedMotion ? 0 : (2 + Math.floor(Math.random() * 3)) * 360
 
-  durationMs.value = prefersReducedMotion ? 0 : 800 + Math.floor(Math.random() * 350)
+  durationMs.value = prefersReducedMotion ? 0 : 1600 + Math.floor(Math.random() * 700)
 
   rotX.value += diffX + extraTurnsX
   rotY.value += diffY + extraTurnsY
@@ -131,7 +131,10 @@ watch(() => props.spin, trigger)
   inset: 0;
   background: #fff;
   border: 3px solid var(--color-cyan, #48bed8);
-  border-radius: 18%;
+  /* Kept small on purpose: each face rounds its own corners
+     independently, so a bigger radius leaves visible gaps/overlap
+     where the six flat faces meet at the cube's corners. */
+  border-radius: 8%;
   box-shadow: inset 0 0 0 2px rgba(33, 41, 52, 0.05);
 }
 

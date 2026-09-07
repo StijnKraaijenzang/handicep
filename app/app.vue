@@ -11,8 +11,7 @@ useHead({
 
 const MIN_DICE = 1
 const MAX_DICE = 20
-const ROLL_DURATION_MS = 650
-const CYCLE_INTERVAL_MS = 90
+const ROLL_DURATION_MS = 900
 const COUNT_STORAGE_KEY = 'dice-app:dice-count'
 const SOUND_STORAGE_KEY = 'dice-app:sound-enabled'
 
@@ -20,7 +19,7 @@ const { playRollSound } = useDiceSound()
 
 const diceCount = ref(2)
 const results = ref<number[]>([])
-const displayResults = ref<number[]>([])
+const spin = ref(0)
 const isRolling = ref(false)
 const soundEnabled = ref(true)
 const statusMessage = ref('Klaar om te rollen.')
@@ -70,28 +69,25 @@ function randomDie() {
   return 1 + Math.floor(Math.random() * 6)
 }
 
-let cycleInterval: ReturnType<typeof setInterval> | undefined
 let rollTimeout: ReturnType<typeof setTimeout> | undefined
 
 function roll() {
-  if (cycleInterval) clearInterval(cycleInterval)
   if (rollTimeout) clearTimeout(rollTimeout)
 
-  const count = diceCount.value
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
+  // The outcome is decided up front, like a real die - the 3D cubes just
+  // spin their way to the face that was already chosen.
+  results.value = Array.from({ length: diceCount.value }, randomDie)
+  spin.value += 1
   isRolling.value = true
   statusMessage.value = 'Bezig met rollen...'
-  displayResults.value = Array.from({ length: count }, randomDie)
 
   if (soundEnabled.value) {
     playRollSound(ROLL_DURATION_MS / 1000)
   }
 
   const finish = () => {
-    if (cycleInterval) clearInterval(cycleInterval)
-    results.value = Array.from({ length: count }, randomDie)
-    displayResults.value = results.value
     isRolling.value = false
     const list = results.value.join(', ')
     statusMessage.value =
@@ -103,15 +99,11 @@ function roll() {
   if (prefersReducedMotion) {
     finish()
   } else {
-    cycleInterval = setInterval(() => {
-      displayResults.value = displayResults.value.map(() => randomDie())
-    }, CYCLE_INTERVAL_MS)
     rollTimeout = setTimeout(finish, ROLL_DURATION_MS)
   }
 }
 
 onUnmounted(() => {
-  if (cycleInterval) clearInterval(cycleInterval)
   if (rollTimeout) clearTimeout(rollTimeout)
 })
 </script>
@@ -179,9 +171,9 @@ onUnmounted(() => {
 
     <section class="panel" aria-labelledby="results-heading">
       <h2 id="results-heading" class="panel__heading">Resultaat</h2>
-      <div v-if="displayResults.length" class="results" :class="{ 'is-rolling': isRolling }">
-        <div v-for="(value, i) in displayResults" :key="i" class="results__die">
-          <DiceFace :value="value" />
+      <div v-if="results.length" class="results">
+        <div v-for="(value, i) in results" :key="i" class="results__die">
+          <Dice3D :value="value" :spin="spin" />
         </div>
       </div>
       <p v-else class="hint">Nog niet gerold.</p>
@@ -309,39 +301,10 @@ body {
 }
 
 .results {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(4.5rem, 1fr));
-  gap: 0.75rem;
-}
-
-.results__die {
-  aspect-ratio: 1;
-}
-
-.results.is-rolling {
-  animation: shake 0.4s ease infinite;
-}
-
-.results.is-rolling .results__die {
-  animation: pulse 0.3s ease infinite;
-}
-
-@keyframes shake {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(-4deg); }
-  75% { transform: rotate(4deg); }
-}
-
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(0.9); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .results.is-rolling,
-  .results.is-rolling .results__die {
-    animation: none;
-  }
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
 }
 
 .total {
